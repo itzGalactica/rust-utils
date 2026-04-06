@@ -6,6 +6,8 @@ use std::env::args;
 ///
 /// # Example
 /// ```
+/// use rust_utils::path_error;
+///
 /// let path = String::from("/home/user/some-file");
 /// path_error(&path, "Failed to read");
 /// ```
@@ -36,9 +38,7 @@ pub fn get_argv() -> Vec<String> {
 ///
 /// # Example:
 /// If the function is used correctly, and the program is run with:
-/// ```
-/// > cli-app file1.txt file2.txt -abc --some-long-arg
-/// ```
+/// `cli-app file1.txt file2.txt -abc --some-long-arg`
 /// This returns `["a", "b", "c", "some-long-arg"]`
 pub fn parse_args(args: &Vec<String>) -> Vec<String> {
     let mut opts: Vec<String> = Vec::new();
@@ -61,4 +61,51 @@ pub fn parse_args(args: &Vec<String>) -> Vec<String> {
     }
 
     opts
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_args;
+
+    #[test]
+    fn parse_args_returns_empty_for_program_only() {
+        let args = vec!["cli-app".to_string()];
+        let parsed = parse_args(&args);
+
+        assert!(parsed.is_empty());
+    }
+
+    #[test]
+    fn parse_args_parses_combined_short_options() {
+        let args = vec!["cli-app".to_string(), "-abc".to_string()];
+        let parsed = parse_args(&args);
+
+        assert_eq!(parsed, vec!["a", "b", "c"]);
+    }
+
+    #[test]
+    fn parse_args_parses_long_options() {
+        let args = vec![
+            "cli-app".to_string(),
+            "--verbose".to_string(),
+            "--dry-run".to_string(),
+        ];
+        let parsed = parse_args(&args);
+
+        assert_eq!(parsed, vec!["verbose", "dry-run"]);
+    }
+
+    #[test]
+    fn parse_args_ignores_positionals_and_keeps_option_order() {
+        let args = vec![
+            "cli-app".to_string(),
+            "input.txt".to_string(),
+            "-xz".to_string(),
+            "output.txt".to_string(),
+            "--force".to_string(),
+        ];
+        let parsed = parse_args(&args);
+
+        assert_eq!(parsed, vec!["x", "z", "force"]);
+    }
 }
