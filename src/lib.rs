@@ -65,7 +65,7 @@ pub fn parse_args(args: &Vec<String>) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_args;
+    use super::{get_argv, parse_args, path_error};
 
     #[test]
     fn parse_args_returns_empty_for_program_only() {
@@ -107,5 +107,22 @@ mod tests {
         let parsed = parse_args(&args);
 
         assert_eq!(parsed, vec!["x", "z", "force"]);
+    }
+
+    #[test]
+    fn path_error_does_not_panic_with_normal_input() {
+        path_error("/some/path/file.txt", "No such file or directory");
+    }
+
+    #[test]
+    fn path_error_does_not_panic_with_empty_strings() {
+        path_error("", "");
+    }
+
+    #[test]
+    fn get_argv_returns_at_least_one_element() {
+        // The first element is always the program name
+        let argv = get_argv();
+        assert!(!argv.is_empty());
     }
 }
